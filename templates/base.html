@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}M259 Study App{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    colors: {
+                        surface: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                            950: '#020617',
+                        },
+                        primary: {
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                        },
+                        accent: {
+                            400: '#a78bfa',
+                            500: '#8b5cf6',
+                            600: '#7c3aed',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        :root {
+            --gradient-primary: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            --gradient-surface: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+        }
+        body {
+            background: var(--gradient-surface);
+            background-attachment: fixed;
+        }
+        .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        .glass-card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.1);
+        }
+        .gradient-border {
+            position: relative;
+        }
+        .gradient-border::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            padding: 1px;
+            border-radius: inherit;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.5), rgba(139, 92, 246, 0.5));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .gradient-border:hover::before {
+            opacity: 1;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            transition: all 0.2s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+        }
+        .nav-link {
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            transition: all 0.2s ease;
+            transform: translateX(-50%);
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        .icon-container {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+        }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body class="font-sans text-gray-100 min-h-screen antialiased">
+    <nav class="glass sticky top-0 z-50 border-b border-slate-700/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <div class="flex items-center justify-between h-16">
+                <a href="/" class="flex items-center gap-2 text-xl font-bold bg-gradient-to-r from-primary-400 to-accent-400 bg-clip-text text-transparent">
+                    <svg class="w-7 h-7 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                    </svg>
+                    M259 Study
+                </a>
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="/flashcards" class="nav-link px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5">Flashcards</a>
+                    <a href="/exam" class="nav-link px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5">Prüfung</a>
+                    <a href="/answer" class="nav-link px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5">Bewertung</a>
+                    <a href="/quiz" class="nav-link px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5">Quiz</a>
+                    <a href="/summary" class="nav-link px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5">Zusammenfassung</a>
+                    <a href="/notes" class="nav-link px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5">Notizen</a>
+                    <a href="/progress" class="nav-link px-3 py-2 rounded-lg text-sm font-medium text-gray-300 hover:text-white hover:bg-white/5">Fortschritt</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {% block content %}{% endblock %}
+    </main>
+    <script>
+        function showLoading(btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="animate-spin inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-2"></span>Laden...';
+        }
+        function resetBtn(btn, text) {
+            btn.disabled = false;
+            btn.textContent = text;
+        }
+    </script>
+</body>
+</html>

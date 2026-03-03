@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}Fortschritt - M259 Study{% endblock %}
+{% block content %}
+<div class="max-w-3xl mx-auto animate-fade-in">
+    <div class="flex items-center gap-3 mb-8">
+        <div class="icon-container w-10 h-10 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+            </svg>
+        </div>
+        <h1 class="text-3xl font-bold text-white">Fortschrittsanalyse</h1>
+    </div>
+    
+    <div class="glass-card rounded-2xl p-6 mb-6">
+        <form id="progressForm">
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-gray-300 mb-2">Themen die du beherrschst (kommagetrennt)</label>
+                <textarea name="topics_known" rows="3" class="w-full bg-surface-800/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition" placeholder="z.B. AI vs ML, ML Kategorien, EDA Grundlagen"></textarea>
+            </div>
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-gray-300 mb-2">Themen die schwierig sind (kommagetrennt)</label>
+                <textarea name="topics_struggling" rows="3" class="w-full bg-surface-800/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 transition" placeholder="z.B. Bias-Reduzierung, RAG, N8N Workflows"></textarea>
+            </div>
+            <button type="submit" class="w-full btn-primary text-white font-medium py-3 px-4 rounded-xl transition">
+                Analyse starten
+            </button>
+        </form>
+    </div>
+    
+    <div id="progressContainer" class="hidden space-y-6">
+        <div class="glass-card rounded-2xl p-8 text-center">
+            <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary-500/20 to-accent-500/20 flex items-center justify-center">
+                <span class="text-4xl font-bold bg-gradient-to-r from-primary-400 to-accent-400 bg-clip-text text-transparent" id="overallScore">0%</span>
+            </div>
+            <p class="text-gray-400">Geschätzter Wissensstand</p>
+        </div>
+        
+        <div class="grid md:grid-cols-2 gap-6">
+            <div class="glass-card rounded-2xl p-6 border-l-4 border-green-500">
+                <h3 class="font-semibold text-green-400 mb-3 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Stärken
+                </h3>
+                <ul id="strengthsList" class="text-gray-300 space-y-2"></ul>
+            </div>
+            <div class="glass-card rounded-2xl p-6 border-l-4 border-red-500">
+                <h3 class="font-semibold text-red-400 mb-3 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    Verbesserungsbereiche
+                </h3>
+                <ul id="weaknessesList" class="text-gray-300 space-y-2"></ul>
+            </div>
+        </div>
+        
+        <div class="glass-card rounded-2xl p-6">
+            <h3 class="font-semibold text-primary-400 mb-3 flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+                Empfehlungen
+            </h3>
+            <ul id="recommendationsList" class="text-gray-300 space-y-3"></ul>
+        </div>
+        
+        <div class="glass-card rounded-2xl p-6">
+            <h3 class="font-semibold text-primary-400 mb-3 flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                </svg>
+                Prioritäre Themen
+            </h3>
+            <div id="priorityTopics" class="flex flex-wrap gap-2"></div>
+        </div>
+        
+        <div class="glass-card rounded-2xl p-6">
+            <h3 class="font-semibold text-primary-400 mb-3 flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                Studienplan (Empfohlen)
+            </h3>
+            <div id="studyPlan" class="space-y-2"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('progressForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    showLoading(btn);
+    
+    const formData = new FormData(e.target);
+    const response = await fetch('/api/analyze-progress', { method: 'POST', body: formData });
+    const data = await response.json();
+    
+    document.getElementById('progressContainer').classList.remove('hidden');
+    document.getElementById('overallScore').textContent = (data.overall_score || 50) + '%';
+    
+    const strengthsList = document.getElementById('strengthsList');
+    strengthsList.innerHTML = (data.strengths || []).map(s => `
+        <li class="flex items-start gap-2">
+            <svg class="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            ${s}
+        </li>
+    `).join('');
+    
+    const weaknessesList = document.getElementById('weaknessesList');
+    weaknessesList.innerHTML = (data.weaknesses || []).map(w => `
+        <li class="flex items-start gap-2">
+            <svg class="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01"/>
+            </svg>
+            ${w}
+        </li>
+    `).join('');
+    
+    const recommendationsList = document.getElementById('recommendationsList');
+    recommendationsList.innerHTML = (data.recommendations || []).map(r => `
+        <li class="flex items-start gap-2 p-3 bg-surface-800/50 rounded-xl">
+            <svg class="w-4 h-4 text-primary-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+            </svg>
+            ${r}
+        </li>
+    `).join('');
+    
+    const priorityTopics = document.getElementById('priorityTopics');
+    priorityTopics.innerHTML = (data.priority_topics || []).map(t => 
+        `<span class="inline-flex items-center gap-1 bg-gradient-to-r from-primary-500/20 to-accent-500/20 text-primary-300 px-4 py-2 rounded-xl border border-primary-500/30 text-sm font-medium">
+            <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+            </svg>
+            ${t}
+        </span>`
+    ).join('');
+    
+    const studyPlan = document.getElementById('studyPlan');
+    if (data.study_plan) {
+        studyPlan.innerHTML = Object.entries(data.study_plan).map(([day, task]) =>
+            `<div class="flex justify-between items-center bg-surface-800/50 p-4 rounded-xl border border-slate-700/50">
+                <span class="font-medium text-primary-400">${day}</span>
+                <span class="text-gray-300 text-right">${task}</span>
+            </div>`
+        ).join('');
+    }
+    
+    resetBtn(btn, 'Analyse starten');
+});
+</script>
+{% endblock %}

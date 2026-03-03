@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% block title %}Flashcards - M259 Study{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto animate-fade-in">
+    <div class="flex items-center gap-3 mb-8">
+        <div class="icon-container w-10 h-10 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+            </svg>
+        </div>
+        <h1 class="text-3xl font-bold text-white">Flashcards</h1>
+    </div>
+    
+    <div class="glass-card rounded-2xl p-6 mb-6">
+        <form id="flashcardForm">
+            <div class="mb-5">
+                <label class="block text-sm font-medium text-gray-300 mb-2">Thema</label>
+                <select name="topic" class="w-full bg-surface-800/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition">
+                    <option value="AI vs ML">AI vs ML Grundlagen</option>
+                    <option value="ML Kategorien">ML Kategorien (Supervised, Unsupervised, Reinforcement)</option>
+                    <option value="Datenschutz DSG">Datenschutz und DSG</option>
+                    <option value="Algorithmic Bias">Algorithmic Bias</option>
+                    <option value="Fairness">Fairness-Definitionen</option>
+                    <option value="ML Projektphasen">ML Projektphasen</option>
+                    <option value="EDA">Explorative Datenanalyse</option>
+                    <option value="Datenbereinigung">Datenbereinigung</option>
+                    <option value="Klassifikation Regression">Klassifikation und Regression</option>
+                    <option value="LLM Grundlagen">LLM Grundlagen</option>
+                    <option value="Prompt Engineering">Prompt Engineering</option>
+                    <option value="RAG">RAG und Vector Databases</option>
+                    <option value="N8N">N8N Workflows</option>
+                    <option value="Alle Themen">Alle Themen (Gemischt)</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-2 gap-4 mb-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Anzahl</label>
+                    <input type="number" name="count" value="5" min="1" max="20" class="w-full bg-surface-800/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Schwierigkeit</label>
+                    <select name="difficulty" class="w-full bg-surface-800/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition">
+                        <option value="easy">Einfach</option>
+                        <option value="medium" selected>Mittel</option>
+                        <option value="hard">Schwer</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="w-full btn-primary text-white font-medium py-3 px-4 rounded-xl transition">
+                Generieren
+            </button>
+        </form>
+    </div>
+    
+    <div id="flashcardsContainer" class="hidden">
+        <div class="flex justify-between items-center mb-4">
+            <span class="px-3 py-1 bg-surface-800/50 rounded-lg text-gray-400 text-sm">
+                Karte <span id="currentIndex" class="text-white font-medium">1</span> von <span id="totalCards">0</span>
+            </span>
+            <div class="flex gap-2">
+                <button onclick="prevCard()" class="px-4 py-2 bg-surface-800/50 hover:bg-surface-700/50 rounded-xl transition flex items-center gap-2 text-gray-300">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                    Zurück
+                </button>
+                <button onclick="nextCard()" class="px-4 py-2 bg-surface-800/50 hover:bg-surface-700/50 rounded-xl transition flex items-center gap-2 text-gray-300">
+                    Weiter
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        
+        <div id="card" class="glass-card rounded-2xl p-8 min-h-64 cursor-pointer transition-all duration-300 hover:scale-[1.02]" onclick="flipCard()">
+            <div id="cardFront" class="text-center">
+                <div class="flex items-center justify-center gap-2 text-sm text-gray-400 mb-4">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Frage (klicken zum Umdrehen)
+                </div>
+                <p id="frontText" class="text-xl text-white"></p>
+            </div>
+            <div id="cardBack" class="text-center hidden">
+                <div class="flex items-center justify-center gap-2 text-sm text-primary-400 mb-4">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Antwort
+                </div>
+                <p id="backText" class="text-xl text-white"></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let flashcards = [];
+let currentCard = 0;
+let isFlipped = false;
+
+document.getElementById('flashcardForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    showLoading(btn);
+    
+    const formData = new FormData(e.target);
+    const response = await fetch('/api/flashcards', { method: 'POST', body: formData });
+    const data = await response.json();
+    
+    flashcards = data.flashcards;
+    currentCard = 0;
+    isFlipped = false;
+    
+    document.getElementById('totalCards').textContent = flashcards.length;
+    document.getElementById('flashcardsContainer').classList.remove('hidden');
+    showCard();
+    resetBtn(btn, 'Generieren');
+});
+
+function showCard() {
+    if (flashcards.length === 0) return;
+    const card = flashcards[currentCard];
+    document.getElementById('frontText').textContent = card.front;
+    document.getElementById('backText').textContent = card.back;
+    document.getElementById('currentIndex').textContent = currentCard + 1;
+    isFlipped = false;
+    document.getElementById('cardFront').classList.remove('hidden');
+    document.getElementById('cardBack').classList.add('hidden');
+}
+
+function flipCard() {
+    isFlipped = !isFlipped;
+    document.getElementById('cardFront').classList.toggle('hidden');
+    document.getElementById('cardBack').classList.toggle('hidden');
+}
+
+function nextCard() {
+    if (currentCard < flashcards.length - 1) {
+        currentCard++;
+        showCard();
+    }
+}
+
+function prevCard() {
+    if (currentCard > 0) {
+        currentCard--;
+        showCard();
+    }
+}
+</script>
+{% endblock %}

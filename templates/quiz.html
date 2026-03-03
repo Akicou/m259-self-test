@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Quiz - M259 Study{% endblock %}
+{% block content %}
+<div class="max-w-2xl mx-auto animate-fade-in">
+    <div class="flex items-center gap-3 mb-8">
+        <div class="icon-container w-10 h-10 rounded-xl flex items-center justify-center">
+            <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        </div>
+        <h1 class="text-3xl font-bold text-white">Quiz</h1>
+    </div>
+    
+    <div class="glass-card rounded-2xl p-6 mb-6">
+        <form id="quizForm">
+            <div class="grid grid-cols-2 gap-4 mb-5">
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Thema</label>
+                    <select name="topic" class="w-full bg-surface-800/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition">
+                        <option value="Alle Themen">Alle Themen</option>
+                        <option value="Tag 1">Tag 1: Grundlagen</option>
+                        <option value="Tag 2">Tag 2: EDA & ML</option>
+                        <option value="Tag 3">Tag 3: LLMs</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-300 mb-2">Anzahl Fragen</label>
+                    <input type="number" name="count" value="10" min="3" max="20" class="w-full bg-surface-800/50 border border-slate-600/50 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 transition">
+                </div>
+            </div>
+            <button type="submit" class="w-full btn-primary text-white font-medium py-3 px-4 rounded-xl transition">
+                Quiz Starten
+            </button>
+        </form>
+    </div>
+    
+    <div id="quizContainer" class="hidden">
+        <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center gap-2">
+                <span class="px-3 py-1 bg-surface-800/50 rounded-lg text-gray-400 text-sm">
+                    Frage <span id="currentQ" class="text-white font-medium">1</span>/<span id="totalQ">0</span>
+                </span>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-1 bg-primary-500/20 rounded-lg">
+                <svg class="w-4 h-4 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                </svg>
+                <span class="text-primary-400 font-semibold">Score: <span id="score">0</span></span>
+            </div>
+        </div>
+        
+        <div id="quizCard" class="glass-card rounded-2xl p-6">
+            <p id="quizQuestion" class="text-xl text-white mb-6"></p>
+            <div id="quizOptions" class="space-y-3"></div>
+        </div>
+        
+        <div id="quizResult" class="hidden glass-card rounded-2xl p-8 text-center">
+            <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/>
+                </svg>
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-2">Quiz beendet!</h2>
+            <p class="text-5xl font-bold bg-gradient-to-r from-primary-400 to-accent-400 bg-clip-text text-transparent mb-6"><span id="finalScore">0</span>%</p>
+            <button onclick="location.reload()" class="btn-primary text-white font-medium py-3 px-6 rounded-xl transition">
+                Neues Quiz
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+let questions = [];
+let currentQ = 0;
+let score = 0;
+let answered = false;
+
+document.getElementById('quizForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = e.target.querySelector('button');
+    showLoading(btn);
+    
+    const formData = new FormData(e.target);
+    const response = await fetch('/api/quiz', { method: 'POST', body: formData });
+    const data = await response.json();
+    
+    questions = data.questions;
+    currentQ = 0;
+    score = 0;
+    answered = false;
+    
+    document.getElementById('totalQ').textContent = questions.length;
+    document.getElementById('quizContainer').classList.remove('hidden');
+    showQuestion();
+    resetBtn(btn, 'Quiz Starten');
+});
+
+function showQuestion() {
+    if (currentQ >= questions.length) {
+        showResult();
+        return;
+    }
+    
+    const q = questions[currentQ];
+    answered = false;
+    document.getElementById('currentQ').textContent = currentQ + 1;
+    document.getElementById('quizQuestion').textContent = q.question;
+    
+    const optionsContainer = document.getElementById('quizOptions');
+    optionsContainer.innerHTML = q.options.map((opt, i) => `
+        <button onclick="selectAnswer(${i})" id="opt${i}" class="w-full text-left p-4 bg-surface-800/50 rounded-xl border border-slate-700/50 hover:border-primary-500/50 hover:bg-surface-800/30 transition text-gray-300">
+            <span class="inline-flex items-center justify-center w-6 h-6 rounded-lg bg-slate-700/50 text-sm font-medium mr-3">${String.fromCharCode(65 + i)}</span>
+            ${opt}
+        </button>
+    `).join('');
+}
+
+function selectAnswer(idx) {
+    if (answered) return;
+    answered = true;
+    
+    const q = questions[currentQ];
+    const correct = q.correct;
+    
+    document.querySelectorAll('#quizOptions button').forEach((btn, i) => {
+        btn.classList.remove('border-slate-700/50', 'border-green-500', 'border-red-500', 'bg-green-500/10', 'bg-red-500/10');
+        
+        if (i === correct) {
+            btn.classList.add('border-green-500', 'bg-green-500/10');
+        } else if (i === idx && idx !== correct) {
+            btn.classList.add('border-red-500', 'bg-red-500/10');
+        }
+    });
+    
+    if (idx === correct) {
+        score++;
+        document.getElementById('score').textContent = score;
+    }
+    
+    setTimeout(() => {
+        currentQ++;
+        showQuestion();
+    }, 1500);
+}
+
+function showResult() {
+    document.getElementById('quizCard').classList.add('hidden');
+    document.getElementById('quizResult').classList.remove('hidden');
+    document.getElementById('finalScore').textContent = Math.round((score / questions.length) * 100);
+}
+</script>
+{% endblock %}
